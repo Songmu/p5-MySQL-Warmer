@@ -40,6 +40,13 @@ $dbh->do(q[CREATE TABLE `test3` (
   `created_at` datetime NOT NULL
 )]);
 
+$dbh->do(q[CREATE TABLE `test4` (
+  `id` BIGINT unsigned PRIMARY KEY auto_increment,
+  `name` VARCHAR(191) NOT NULL,
+  `created_at` datetime NOT NULL,
+  INDEX `name_idx` (`name`)
+)]);
+
 my $warmer = MySQL::Warmer->new(dbh => $dbh);
 
 $warmer->run;
