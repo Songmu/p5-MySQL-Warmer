@@ -53,7 +53,9 @@ sub run {
             push @{ $indexes{ $index_column->{index_name} } }, $index_column->{column_name};
         }
 
-        for my $cols (values %indexes) {
+        my @indexes =  delete $indexes{PRIMARY};
+        push @indexes, values(%indexes);
+        for my $cols (@indexes) {
             my @selectee;
             for my $col (@$cols) {
                 my $index_column = $table->column($col);
