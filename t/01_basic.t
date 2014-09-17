@@ -40,7 +40,7 @@ $dbh->do(q[CREATE TABLE `test3` (
   `created_at` datetime NOT NULL
 )]);
 
-my $warmer = MySQL::Warmer->new(dsn => [$mysqld->dsn(dbname => 'test')]);
+my $warmer = MySQL::Warmer->new(dbh => $dbh);
 
 $warmer->run;
 

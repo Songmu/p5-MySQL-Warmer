@@ -37,7 +37,8 @@ no Moo;
 sub run {
     my $self = shift;
 
-    for my $table ($self->_inspector->tables) {
+    my $inspector = $self->_inspector;
+    for my $table ($inspector->tables) {
         my @table_pk = map { $_->name } $table->primary_key;
 
         my @selectee;
@@ -60,10 +61,33 @@ sub run {
 
         print "$query\n";
         $self->dbh->do($query);
+
+        # my $indexes = $self->statistics_info(table => $table->name, schema => $table->schema);
     }
 
 }
 
+sub statistics_info {
+    my ($self, %args) = @_;
+    my $table     = $args{table};
+    my $schema    = $args{schema};
+    my $dbh       = $self->dbh;
+
+    my $sql = <<'...';
+SELECT
+    index_name,
+    column_name
+FROM Information_schema.STATISTICS
+WHERE
+    table_schema = ? AND
+    table_name   = ?
+ORDER BY table_schema, table_name, seq_in_index;
+...
+
+    my $sth = $dbh->prepare($sql);
+    $sth->execute($schema, $table);
+    $sth->fetchall_arrayref(+{});
+}
 
 1;
 __END__
