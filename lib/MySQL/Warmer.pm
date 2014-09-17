@@ -69,8 +69,8 @@ sub run {
                 }
             }
 
-            my $query = sprintf 'SELECT %s FROM %s ORDER BY %s;',
-                join(', ', @selectee), $table->name, join(', ', @$cols);
+            my $query = sprintf 'SELECT %s FROM (SELECT %s FROM %s ORDER BY %s) as t1;',
+                join(', ', @selectee), join(', ', @$cols), $table->name, join(', ', @$cols);
 
             print "$query";
             unless ($self->dry_run) {
