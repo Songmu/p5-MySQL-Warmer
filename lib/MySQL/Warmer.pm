@@ -24,6 +24,11 @@ has dsn => (
     isa => sub { ref $_[0] eq 'ARRAY' },
 );
 
+has dry_run => (
+    is      => 'ro',
+    default => sub { 0 },
+);
+
 has _inspector => (
     is   => 'ro',
     lazy => 1,
@@ -39,32 +44,42 @@ sub run {
 
     my $inspector = $self->_inspector;
     for my $table ($inspector->tables) {
-        my @table_pk = map { $_->name } $table->primary_key;
 
-        my @selectee;
-        for my $pk (@table_pk) {
-            my $pk_column = $table->column($pk);
-            my $data_type_name = uc $pk_column->type_name;
-            if ($data_type_name =~ /(?:INT(?:EGER)?|FLOAT|DOUBLE|DECI(?:MAL)?)$/) {
-                push @selectee, sprintf "SUM(%s)", $pk_column->name;
-            }
-            elsif ($data_type_name =~ /(?:DATE|TIME)/) {
-                push @selectee, sprintf "SUM(UNIX_TIMESTAMP(%s))", $pk_column->name;
-            }
-            else {
-                push @selectee, sprintf "SUM(LENGTH(%s))", $pk_column->name;
-            }
+        my $indexes = $self->statistics_info(table => $table->name, schema => $table->schema);
+        my %indexes;
+
+        for my $index_column (@$indexes) {
+            $indexes{ $index_column->{index_name} } ||= [];
+            push @{ $indexes{ $index_column->{index_name} } }, $index_column->{column_name};
         }
 
-        my $query = sprintf 'SELECT %s FROM %s ORDER BY %s;',
-            join(', ', @selectee), $table->name, join(', ', @table_pk);
+        for my $cols (values %indexes) {
+            my @selectee;
+            for my $col (@$cols) {
+                my $index_column = $table->column($col);
+                my $data_type_name = uc $index_column->type_name;
+                if ($data_type_name =~ /(?:INT(?:EGER)?|FLOAT|DOUBLE|DECI(?:MAL)?)$/) {
+                    push @selectee, sprintf "SUM(%s)", $index_column->name;
+                }
+                elsif ($data_type_name =~ /(?:DATE|TIME)/) {
+                    push @selectee, sprintf "SUM(UNIX_TIMESTAMP(%s))", $index_column->name;
+                }
+                else {
+                    push @selectee, sprintf "SUM(LENGTH(%s))", $index_column->name;
+                }
+            }
 
-        print "$query\n";
-        $self->dbh->do($query);
+            my $query = sprintf 'SELECT %s FROM %s ORDER BY %s;',
+                join(', ', @selectee), $table->name, join(', ', @$cols);
 
-        # my $indexes = $self->statistics_info(table => $table->name, schema => $table->schema);
+            print "$query";
+            unless ($self->dry_run) {
+                $self->dbh->do($query);
+                print " ...done!";
+            }
+            print "\n";
+        }
     }
-
 }
 
 sub statistics_info {
