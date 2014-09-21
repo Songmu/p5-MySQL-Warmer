@@ -1,0 +1,5 @@
+#!perl
+use strict;
+use warnings;
+use MySQL::Warmer::CLI;
+MySQL::Warmer::CLI->run(@ARGV);
