@@ -108,6 +108,7 @@ ORDER BY table_schema, table_name, seq_in_index;
 
 1;
 __END__
+=for stopwords InnoDB
 
 =encoding utf-8
 
