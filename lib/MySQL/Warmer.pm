@@ -113,15 +113,24 @@ __END__
 
 =head1 NAME
 
-MySQL::Warmer - It's new $module
+MySQL::Warmer - execute warming up queries for InnoDB
 
 =head1 SYNOPSIS
 
     use MySQL::Warmer;
+    MySQL::Warmer->new(dbh => $dbh)->run;
 
 =head1 DESCRIPTION
 
-MySQL::Warmer is ...
+MySQL::Warmer is to execute warming up queries on cold DB server.
+
+I consulted following entry about warming up strategy of this module.
+
+L<http://labs.cybozu.co.jp/blog/kazuho/archives/2007/10/innodb_warmup.php>
+
+=head1 SEE ALSO
+
+L<mysql-warmup>
 
 =head1 LICENSE
 
