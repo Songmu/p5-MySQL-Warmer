@@ -53,5 +53,4 @@ $warmer->run;
 
 pass 'ok';
 
-
 done_testing;
