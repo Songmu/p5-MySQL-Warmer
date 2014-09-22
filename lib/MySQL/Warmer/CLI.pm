@@ -38,6 +38,9 @@ sub parse_options {
         chomp ($opt{password} = ReadLine);
     }
     $opt{database} = shift @ARGV;
+    unless (defined $opt{database}) {
+        pod2usage(1);
+    }
 
     my $dry_run = delete $opt{'dry-run'};
 

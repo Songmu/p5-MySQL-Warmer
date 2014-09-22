@@ -1,6 +1,9 @@
 requires 'DBI';
 requires 'DBIx::Inspector';
+requires 'Getopt::Long';
 requires 'Moo';
+requires 'Pod::Usage';
+requires 'Term::ReadKey';
 requires 'perl', '5.008001';
 
 on configure => sub {
