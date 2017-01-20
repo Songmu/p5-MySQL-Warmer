@@ -47,6 +47,10 @@ $dbh->do(q[CREATE TABLE `test4` (
   INDEX `name_idx` (`name`)
 )]);
 
+$dbh->do(q[CREATE TABLE `test5` (
+  `key` BIGINT unsigned PRIMARY KEY auto_increment
+)]);
+
 my $warmer = MySQL::Warmer->new(dbh => $dbh);
 
 $warmer->run;
