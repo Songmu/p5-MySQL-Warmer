@@ -57,22 +57,25 @@ sub run {
         push @indexes, values(%indexes);
         for my $cols (@indexes) {
             my @selectee;
+            my @quoted_cols;
             for my $col (@$cols) {
                 my $index_column = $table->column($col);
+
                 my $data_type_name = uc $index_column->type_name;
                 if ($data_type_name =~ /(?:INT(?:EGER)?|FLOAT|DOUBLE|DECI(?:MAL)?)$/) {
-                    push @selectee, sprintf "SUM(%s)", $index_column->name;
+                    push @selectee, sprintf "SUM(`%s`)", $index_column->name;
                 }
                 elsif ($data_type_name =~ /(?:DATE|TIME)/) {
-                    push @selectee, sprintf "SUM(UNIX_TIMESTAMP(%s))", $index_column->name;
+                    push @selectee, sprintf "SUM(UNIX_TIMESTAMP(`%s`))", $index_column->name;
                 }
                 else {
-                    push @selectee, sprintf "SUM(LENGTH(%s))", $index_column->name;
+                    push @selectee, sprintf "SUM(LENGTH(`%s`))", $index_column->name;
                 }
+                push @quoted_cols, sprintf "`%s`", $col;
             }
 
-            my $query = sprintf 'SELECT %s FROM (SELECT %s FROM %s ORDER BY %s) as t1;',
-                join(', ', @selectee), join(', ', @$cols), $table->name, join(', ', @$cols);
+            my $query = sprintf 'SELECT %s FROM (SELECT %s FROM `%s` ORDER BY %s) as t1;',
+                join(', ', @selectee), join(', ', @quoted_cols), $table->name, join(', ', @quoted_cols);
 
             print "$query";
             unless ($self->dry_run) {
